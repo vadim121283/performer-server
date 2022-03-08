@@ -1,49 +1,27 @@
-import { ApolloServer, gql } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
 import express from 'express';
 import http from 'http';
+import * as Auth from './data/api/middlewares/auth.middleware';
+import { corsServer } from './data/api/middlewares/cors.middleware';
+import { dbConnect } from './data/mongo/dbConnect';
+import { typeDefs } from './data/graphql/typeDefs';
+import { loggerMiddleware } from './data/api/middlewares/logger.middleware';
+import { resolvers } from './data/graphql/resolvers';
+import { DocumentNode } from 'graphql';
 
-// A schema is a collection of type definitions (hence "typeDefs")
-// that together define the "shape" of queries that are executed against
-// your data.
-const typeDefs = gql`
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-
-  # This "Book" type defines the queryable fields for every book in our data source.
-  type Book {
-    title: String
-    author: String
-  }
-
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
-  type Query {
-    books: [Book]
-  }
-`;
-
-const books = [
-  {
-    title: 'The Awakening',
-    author: 'Kate Chopin',
-  },
-  {
-    title: 'City of Glass',
-    author: 'Paul Auster',
-  },
-];
-
-// Resolvers define the technique for fetching the types defined in the
-// schema. This resolver retrieves books from the "books" array above.
-const resolvers = {
-  Query: {
-    books: () => books,
-  },
-};
-
-async function startApolloServer(typeDefs: any, resolvers: any) {
+async function startApolloServer(typeDefs: DocumentNode[], resolvers: any) {
   const app = express();
+
+  // Logger
+  app.use(loggerMiddleware);
+
+  // CORS
+  app.use(corsServer());
+
+  // auth GraphQL
+  app.use(Auth.authorize(['GQL']));
+
   const httpServer = http.createServer(app);
   const server = new ApolloServer({
     typeDefs,
@@ -52,10 +30,12 @@ async function startApolloServer(typeDefs: any, resolvers: any) {
   });
   await server.start();
   server.applyMiddleware({ app });
-  await new Promise<void>((resolve) =>
-    httpServer.listen({ port: 4000 }, resolve)
-  );
+  await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
   console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
 }
+
+dbConnect()
+  .then(() => console.log('db connected'))
+  .catch((err) => console.log(err));
 
 startApolloServer(typeDefs, resolvers);

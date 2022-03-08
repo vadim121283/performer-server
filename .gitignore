@@ -1,2 +1,11 @@
 /node_modules
 /dist
+
+# Database
+/database
+
+# Logs
+/logs
+
+# auth keys
+public.key
