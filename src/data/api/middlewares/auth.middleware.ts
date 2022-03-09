@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { createUser } from '../../users/createUser';
+import { hasUserAccessToEndpoint } from '../utils/auth.utils';
 import { validateToken } from '../utils/jwt.utils';
 
 /**
@@ -25,11 +26,10 @@ export const authorize = (allowedAccessTypes: string[]) => async (req: Request, 
     const decodedToken = await validateToken(jwt);
 
     // auto create user
+    // FIXME: Many request to db
     createUser({ guid: decodedToken.guid, login: decodedToken.login });
 
-    const hasAccessToEndpoint = allowedAccessTypes.some((at) => decodedToken.accessTypes.some((uat) => uat === at));
-
-    if (!hasAccessToEndpoint) {
+    if (!hasUserAccessToEndpoint(allowedAccessTypes, decodedToken.accessTypes)) {
       return res.status(401).json({ message: 'No enough privileges to access endpoint' });
     }
 

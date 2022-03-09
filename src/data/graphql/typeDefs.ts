@@ -3,6 +3,7 @@ import { typeDefs as User } from '../users/usersTypeDefs';
 
 const Query = gql`
   type Query {
+    user(guid: String): User
     users: [User]
   }
 `;
