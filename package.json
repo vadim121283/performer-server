@@ -7,6 +7,8 @@
     "start": "tsc && node dist/index.js",
     "start-docker": "node_modules/typescript/bin/tsc && node dist/index.js",
     "serve": "concurrently \"npm run build.w\" \"nodemon --watch ./dist ./dist/index.js\"",
+    "docker-mongo up": "docker-compose -f docker-mongo.yml up",
+    "docker-mongo down": "docker-compose -f docker-mongo.yml down",
     "build.w": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

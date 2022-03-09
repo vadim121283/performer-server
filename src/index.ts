@@ -1,6 +1,6 @@
 import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
-import express, { Request } from 'express';
+import express from 'express';
 import http from 'http';
 import * as Auth from './data/api/middlewares/auth.middleware';
 import { corsServer } from './data/api/middlewares/cors.middleware';
@@ -9,11 +9,6 @@ import { typeDefs } from './data/graphql/typeDefs';
 import { loggerMiddleware } from './data/api/middlewares/logger.middleware';
 import { resolvers } from './data/graphql/resolvers';
 import { DocumentNode } from 'graphql';
-
-function decodeReq(req: Request) {
-  console.log('REQ1 ', req.user?.accessTypes);
-  return req.user?.accessTypes;
-}
 
 async function startApolloServer(typeDefs: DocumentNode[], resolvers: any) {
   const app = express();
